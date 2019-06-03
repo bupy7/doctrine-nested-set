@@ -4,17 +4,17 @@ namespace Bupy7\Doctrine\NestedSet;
 
 interface NestedSetInterface
 {
-	/**
-	 * @param mixed $id
+    /**
+     * @param mixed $id
      * @return NestedSetInterface
-	 */
-	public function setId($id): NestedSetInterface;
-	
-	/**
-	 * @return mixed
-	 */
-	public function getId();
-	
+     */
+    public function setId($id): NestedSetInterface;
+
+    /**
+     * @return mixed 
+     */
+    public function getId();
+
     public function setLevel(int $level): NestedSetInterface;
 
     public function getLevel(): int;
