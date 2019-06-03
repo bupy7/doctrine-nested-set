@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/6.3/phpunit.xsd"
+         bootstrap="./test/bootstrap.php"
+         verbose="true"
+         colors="true">
+
+  <testsuites>
+    <testsuite name="Bupy7\\Doctrine\\NestedSets">
+      <directory>./test/src/Functional</directory>
+    </testsuite>
+  </testsuites>
+
+  <filter>
+    <whitelist>
+      <directory suffix=".php">./src</directory>
+    </whitelist>
+  </filter>
+
+  <logging>
+    <log type="coverage-html" target="build/coverage"/>
+    <log type="coverage-clover" target="build/logs/clover.xml"/>
+  </logging>
+
+  <php>
+    <env name="db_host" value="mysql"/>
+    <env name="db_username" value="admin"/>
+    <env name="db_password" value="1234"/>
+    <env name="db_name" value="master_test"/>
+    <env name="db_port" value="3306"/>
+  </php>
+</phpunit>

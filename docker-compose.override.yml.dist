@@ -1,0 +1,6 @@
+version: '2'
+services:
+  php-cli:
+    build:
+      args:
+        - GITHUB_OAUTH_TOKEN={...}

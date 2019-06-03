@@ -1,0 +1,8 @@
+.DS_Store
+/vendor
+/composer.lock
+/.php_cs.cache
+/phpunit.xml
+/build
+/.idea
+/docker-compose.override.yml
