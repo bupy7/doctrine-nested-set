@@ -330,6 +330,11 @@ Result of tree:
 - Tablets
 ```
 
+Sponsors
+--------
+
+[![JetBrains](docs/jetbrains-variant-4.svg)](https://www.jetbrains.com/?from=doctrine-nested-set)
+
 License
 -------
 
