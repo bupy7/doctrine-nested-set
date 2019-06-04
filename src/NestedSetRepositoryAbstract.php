@@ -6,8 +6,8 @@ use Doctrine\ORM\EntityRepository;
 
 abstract class NestedSetRepositoryAbstract extends EntityRepository
 {
-    const ROOT_LEVEL = 1;
-    const DEFAULT_ROOT_LEFT_KEY = 1;
+    private const ROOT_LEVEL = 1;
+    private const DEFAULT_ROOT_LEFT_KEY = 1;
 
     /**
      * @return NestedSetInterface[]|array
@@ -60,11 +60,7 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
             ->getResult();
     }
 
-    /**
-     * @param NestedSetInterface $entity
-     * @return NestedSetInterface[]|null
-     */
-    public function findOneParent(NestedSetInterface $entity)
+    public function findOneParent(NestedSetInterface $entity): ?NestedSetInterface
     {
         if ($entity->getLevel() - 1 <= 0) {
             return null;

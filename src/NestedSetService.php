@@ -2,13 +2,13 @@
 
 namespace Bupy7\Doctrine\NestedSet;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\TransactionIsolationLevel;
 use Doctrine\ORM\EntityManager;
-use Exception;
+use Doctrine\ORM\ORMException;
 
 class NestedSetService
 {
-    const ROOT_LEVEL = 1;
+    private const ROOT_LEVEL = 1;
 
     /**
      * @var EntityManager
@@ -27,10 +27,15 @@ class NestedSetService
         $this->repository = $repository;
     }
 
+    /**
+     * @param NestedSetInterface $child
+     * @param NestedSetInterface|null $parent
+     * @throws ORMException
+     */
     public function add(NestedSetInterface $child, NestedSetInterface $parent = null): void
     {
         $oldIsoTrans = $this->em->getConnection()->getTransactionIsolation();
-        $this->em->getConnection()->setTransactionIsolation(Connection::TRANSACTION_SERIALIZABLE);
+        $this->em->getConnection()->setTransactionIsolation(TransactionIsolationLevel::SERIALIZABLE);
         $this->em->beginTransaction();
 
         try {
@@ -41,7 +46,7 @@ class NestedSetService
             }
 
             $this->em->commit();
-        } catch (Exception $e) {
+        } catch (ORMException $e) {
             $this->em->rollback();
 
             throw $e;
@@ -50,10 +55,14 @@ class NestedSetService
         }
     }
 
+    /**
+     * @param NestedSetInterface $child
+     * @throws ORMException
+     */
     public function remove(NestedSetInterface $child): void
     {
         $oldIsoTrans = $this->em->getConnection()->getTransactionIsolation();
-        $this->em->getConnection()->setTransactionIsolation(Connection::TRANSACTION_SERIALIZABLE);
+        $this->em->getConnection()->setTransactionIsolation(TransactionIsolationLevel::SERIALIZABLE);
         $this->em->beginTransaction();
 
         try {
@@ -64,7 +73,7 @@ class NestedSetService
             }
 
             $this->em->commit();
-        } catch (Exception $e) {
+        } catch (ORMException $e) {
             $this->em->rollback();
 
             throw $e;
@@ -73,6 +82,10 @@ class NestedSetService
         }
     }
 
+    /**
+     * @param NestedSetInterface $child
+     * @throws ORMException
+     */
     private function addAsRoot(NestedSetInterface $child): void
     {
         $child->setLevel(self::ROOT_LEVEL)
@@ -84,6 +97,11 @@ class NestedSetService
         $this->em->flush();
     }
 
+    /**
+     * @param NestedSetInterface $child
+     * @param NestedSetInterface $parent
+     * @throws ORMException
+     */
     private function addAsChild(NestedSetInterface $child, NestedSetInterface $parent): void
     {
         $child->setLevel($parent->getLevel() + 1)
@@ -106,6 +124,10 @@ class NestedSetService
         $this->em->flush();
     }
 
+    /**
+     * @param NestedSetInterface $child
+     * @throws ORMException
+     */
     private function removeOne(NestedSetInterface $child): void
     {
         $entities = $this->repository->findGreatestByKeysValue($child->getRightKey());
@@ -124,6 +146,10 @@ class NestedSetService
         $this->em->flush();
     }
 
+    /**
+     * @param NestedSetInterface $child
+     * @throws ORMException
+     */
     private function removeWithDescendants(NestedSetInterface $child): void
     {
         $descendants = $this->repository->findDescendants($child);
