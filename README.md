@@ -20,15 +20,15 @@ Features
 - [x] Fething root items.
 - [x] Fething ancestor items.
 - [x] Adding as last of some item.
-- [ ] Adding as first of some item.
-- [ ] Adding after some item.
-- [ ] Adding before some item.
+- [ ] TODO: Adding as first of some item.
+- [ ] TODO: Adding after some item.
+- [ ] TODO: Adding before some item.
 - [x] Adding as a root item.
 - [x] Removing a item.
-- [ ] Moving item after some item.
-- [ ] Moving item before some item.
-- [ ] Making as root item.
-- [ ] Making as a child item of some parent item.
+- [ ] TODO: Moving item after some item.
+- [ ] TODO: Moving item before some item.
+- [ ] TODO: Making as root item.
+- [ ] TODO: Making as a child item of some parent item.
 
 Install
 -------
@@ -147,7 +147,13 @@ class CategoryRepository extends NestedSetRepositoryAbstract
 }
 ```
 
-Profit!
+**Create instance of the nested set service:**
+
+```php
+use Bupy7\Doctrine\NestedSet\NestedSetService;
+
+$nestedSetService = new NestedSetService($entityManager, $entityManager->getRepository(Category::class));
+```
 
 Usage
 -----
@@ -165,7 +171,164 @@ Usage
 - Tablets
 ```
 
-**@TODO**
+**Fetching all items:**
+
+```php
+$categories = $categoryRepository->findAll();
+
+// var_dump($categories);
+//
+// - PC
+// - Motherboards
+// - RAM
+// - DDR3
+// - DDR4
+// - CPU
+// - Laptops
+// - Tablets
+```
+
+**Fething children items:**
+
+```php
+$parentCategory = $categoryRepository->findOneByName('RAM');
+$children = $categoryRepository->findChildren($parentCategory);
+
+// var_dump($children);
+//
+// - DDR3
+// - DDR4
+```
+
+**Fething descendant items:**
+
+```php
+$parentCategory = $categoryRepository->findOneByName('PC');
+$descendants = $categoryRepository->findChildren($parentCategory);
+
+// var_dump($children);
+//
+// - Motherboards
+// - RAM
+// - DDR3
+// - DDR4
+// - CPU
+```
+
+**Fething a parent item:**
+
+```php
+$childrenCategory = $categoryRepository->findOneByName('RAM');
+$parent = $categoryRepository->findOneParent($childrenCategory);
+
+// var_dump($parent);
+//
+// - PC
+```
+
+**Fething root items:**
+
+```php
+$roots = $categoryRepository->findRoots();
+
+// var_dump($parent);
+//
+// - PC
+// - Laptops
+// - Tablets
+```
+
+**Fething ancestor items:**
+
+```php
+$childrenCategory = $categoryRepository->findOneByName('DDR3');
+$roots = $categoryRepository->findAncestors($childrenCategory);
+
+// var_dump($parent);
+//
+// - RAM
+// - PC
+```
+
+**Adding as last of some item:**
+
+```php
+$category = new Category();
+$category->setName('LGA 1151v2');
+
+$parentCategory = $categoryRepository->findOneByName('CPU');
+$nestedSetService->add($category, $parentCategory);
+```
+
+Result of tree:
+
+```
+- PC
+- - Motherboards
+- - RAM
+- - - DDR3
+- - - DDR4
+- - CPU
+- - - LGA 1151v2
+- Laptops
+- Tablets
+```
+
+**Adding as a root item:**
+
+```php
+$category = new Category();
+$category->setName('Phones');
+
+$nestedSetService->add($category);
+```
+
+Result of tree:
+
+```
+- PC
+- - Motherboards
+- - RAM
+- - - DDR3
+- - - DDR4
+- - CPU
+- Laptops
+- Tablets
+- Phones
+```
+
+**Removing a item:**
+
+```php
+$category = $categoryRepository->findOneByName('CPU');
+$nestedSetService->remove($category);
+```
+
+Result of tree:
+
+```
+- PC
+- - Motherboards
+- - RAM
+- - - DDR3
+- - - DDR4
+- Laptops
+- Tablets
+```
+
+or remove with descendants:
+
+```php
+$category = $categoryRepository->findOneByName('PC');
+$nestedSetService->remove($category);
+```
+
+Result of tree:
+
+```
+- Laptops
+- Tablets
+```
 
 License
 -------
