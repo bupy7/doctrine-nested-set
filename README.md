@@ -16,7 +16,7 @@ Install
 The preferred way to install this extension is through [composer](https://getcomposer.org/download/).
 
 ```
-$ composer require doctrine-nested-set "*"
+$ composer require bupy7/doctrine-nested-set "*"
 ```
 
 How to use
