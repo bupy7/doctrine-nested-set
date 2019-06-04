@@ -1,0 +1,24 @@
+language: php
+php:
+  - '7.1'
+  - '7.2'
+  - '7.3'
+
+services:
+  - mysql
+
+env:
+  - BDNS_DB_HOST=127.0.0.1
+  - BDNS_DB_USERNAME=root
+  - BDNS_DB_PASSWORD=
+
+before_install:
+  - mysql -e 'CREATE DATABASE master_test;'
+
+before_script:
+  - travis_retry composer self-update && composer --version
+  - export PATH="$HOME/.composer/vendor/bin:$PATH"
+  - travis_retry composer install --prefer-dist --no-interaction
+
+after_script:
+  - vendor/bin/php-coveralls -v

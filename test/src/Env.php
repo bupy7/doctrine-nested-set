@@ -36,7 +36,7 @@ class Env
      */
     public function getDbName()
     {
-        return $this->get('db_name');
+        return $this->get('BDNS_DB_NAME');
     }
 
     /**
@@ -44,7 +44,7 @@ class Env
      */
     public function getDbUsername()
     {
-        return $this->get('db_username');
+        return $this->get('BDNS_DB_USERNAME');
     }
 
     /**
@@ -52,7 +52,7 @@ class Env
      */
     public function getDbPassword()
     {
-        return $this->get('db_password');
+        return $this->get('BDNS_DB_PASSWORD');
     }
 
     /**
@@ -60,7 +60,7 @@ class Env
      */
     public function getDbHost()
     {
-        return $this->get('db_host');
+        return $this->get('BDNS_DB_HOST');
     }
 
     /**
@@ -68,7 +68,7 @@ class Env
      */
     public function getDbPort()
     {
-        return $this->get('db_port');
+        return $this->get('BDNS_DB_PORT');
     }
 
     /**

@@ -11,7 +11,7 @@ interface NestedSetInterface
     public function setId($id): NestedSetInterface;
 
     /**
-     * @return mixed 
+     * @return mixed
      */
     public function getId();
 

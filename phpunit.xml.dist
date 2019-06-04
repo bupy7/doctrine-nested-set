@@ -23,10 +23,10 @@
   </logging>
 
   <php>
-    <env name="db_host" value="mysql"/>
-    <env name="db_username" value="admin"/>
-    <env name="db_password" value="1234"/>
-    <env name="db_name" value="master_test"/>
-    <env name="db_port" value="3306"/>
+    <env name="BDNS_DB_HOST" value="mysql"/>
+    <env name="BDNS_DB_USERNAME" value="admin"/>
+    <env name="BDNS_DB_PASSWORD" value="1234"/>
+    <env name="BDNS_DB_NAME" value="master_test"/>
+    <env name="BDNS_DB_PORT" value="3306"/>
   </php>
 </phpunit>
