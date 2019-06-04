@@ -42,7 +42,7 @@ $ composer require bupy7/doctrine-nested-set "*"
 Configuration
 -------------
 
-**Add entity:**
+#### Add entity
 
 ```php
 use Bupy7\Doctrine\NestedSet\NestedSetInterface;
@@ -137,7 +137,7 @@ class Category implements NestedSetInterface
 }
 ```
 
-**Add repository:**
+#### Add repository
 
 ```php
 use Bupy7\Doctrine\NestedSet\NestedSetRepositoryAbstract;
@@ -147,7 +147,7 @@ class CategoryRepository extends NestedSetRepositoryAbstract
 }
 ```
 
-**Create instance of the nested set service:**
+#### Create instance of the nested set service
 
 ```php
 use Bupy7\Doctrine\NestedSet\NestedSetService;
@@ -171,7 +171,7 @@ Usage
 - Tablets
 ```
 
-**Fetching all items:**
+#### Fetching all items
 
 ```php
 $categories = $categoryRepository->findAll();
@@ -188,7 +188,7 @@ $categories = $categoryRepository->findAll();
 // - Tablets
 ```
 
-**Fething children items:**
+#### Fething children items
 
 ```php
 $parentCategory = $categoryRepository->findOneByName('RAM');
@@ -200,7 +200,7 @@ $children = $categoryRepository->findChildren($parentCategory);
 // - DDR4
 ```
 
-**Fething descendant items:**
+#### Fething descendant items
 
 ```php
 $parentCategory = $categoryRepository->findOneByName('PC');
@@ -215,7 +215,7 @@ $descendants = $categoryRepository->findChildren($parentCategory);
 // - CPU
 ```
 
-**Fething a parent item:**
+#### Fething a parent item
 
 ```php
 $childrenCategory = $categoryRepository->findOneByName('RAM');
@@ -226,7 +226,7 @@ $parent = $categoryRepository->findOneParent($childrenCategory);
 // - PC
 ```
 
-**Fething root items:**
+#### Fething root items
 
 ```php
 $roots = $categoryRepository->findRoots();
@@ -238,7 +238,7 @@ $roots = $categoryRepository->findRoots();
 // - Tablets
 ```
 
-**Fething ancestor items:**
+#### Fething ancestor items
 
 ```php
 $childrenCategory = $categoryRepository->findOneByName('DDR3');
@@ -250,7 +250,7 @@ $roots = $categoryRepository->findAncestors($childrenCategory);
 // - PC
 ```
 
-**Adding as last of some item:**
+#### Adding as last of some item
 
 ```php
 $category = new Category();
@@ -274,7 +274,7 @@ Result of tree:
 - Tablets
 ```
 
-**Adding as a root item:**
+#### Adding as a root item
 
 ```php
 $category = new Category();
@@ -297,7 +297,7 @@ Result of tree:
 - Phones
 ```
 
-**Removing a item:**
+#### Removing a item
 
 ```php
 $category = $categoryRepository->findOneByName('CPU');
