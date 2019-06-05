@@ -85,7 +85,7 @@ class Category implements NestedSetInterface
         return $this->id;
     }
 
-    public function setId(?int $id): NestedSetInterface
+    public function setId($id): NestedSetInterface
     {
         $this->id = $id;
         return $this;
@@ -204,7 +204,7 @@ $children = $categoryRepository->findChildren($parentCategory);
 
 ```php
 $parentCategory = $categoryRepository->findOneByName('PC');
-$descendants = $categoryRepository->findChildren($parentCategory);
+$descendants = $categoryRepository->findDescendants($parentCategory);
 
 // var_dump($children);
 //
