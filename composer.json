@@ -1,7 +1,7 @@
 {
   "name": "bupy7/doctrine-nested-set",
   "description": "Nested sets for Doctrine ORM",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "BSD-3-Clause",
   "keywords": [
     "doctrine",

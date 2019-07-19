@@ -108,13 +108,16 @@ class NestedSetService
             ->setLeftKey($parent->getRightKey())
             ->setRightKey($child->getLeftKey() + 1);
 
-        $entities = $this->repository->findGreatestByKeysValue($parent->getRightKey());
+        $rightKey = $parent->getRightKey();
+
+        $entities = $this->repository->findGreatestByKeysValue($rightKey);
+
         foreach ($entities as $entity) {
-            if ($entity->getLeftKey() >= $parent->getRightKey()) {
+            if ($entity->getLeftKey() >= $rightKey) {
                 $entity->setLeftKey($entity->getLeftKey() + 2);
             }
 
-            if ($entity->getRightKey() >= $parent->getRightKey()) {
+            if ($entity->getRightKey() >= $rightKey) {
                 $entity->setRightKey($entity->getRightKey() + 2);
             }
         }
@@ -130,13 +133,16 @@ class NestedSetService
      */
     private function removeOne(NestedSetInterface $child): void
     {
-        $entities = $this->repository->findGreatestByKeysValue($child->getRightKey());
+        $rightKey = $child->getRightKey();
+
+        $entities = $this->repository->findGreatestByKeysValue($rightKey);
+
         foreach ($entities as $entity) {
-            if ($entity->getLeftKey() >= $child->getRightKey()) {
+            if ($entity->getLeftKey() >= $rightKey) {
                 $entity->setLeftKey($entity->getLeftKey() - 2);
             }
 
-            if ($entity->getRightKey() >= $child->getRightKey()) {
+            if ($entity->getRightKey() >= $rightKey) {
                 $entity->setRightKey($entity->getRightKey() - 2);
             }
         }
@@ -157,14 +163,17 @@ class NestedSetService
             $this->em->remove($entity);
         }
 
-        $entities = $this->repository->findGreatestByKeysValue($child->getRightKey());
-        $diff = $child->getRightKey() - $child->getLeftKey() + 1;
+        $rightKey = $child->getRightKey();
+        $diff = $rightKey - $child->getLeftKey() + 1;
+
+        $entities = $this->repository->findGreatestByKeysValue($rightKey);
+
         foreach ($entities as $entity) {
-            if ($entity->getLeftKey() >= $child->getRightKey()) {
+            if ($entity->getLeftKey() >= $rightKey) {
                 $entity->setLeftKey($entity->getLeftKey() - $diff);
             }
 
-            if ($entity->getRightKey() >= $child->getRightKey()) {
+            if ($entity->getRightKey() >= $rightKey) {
                 $entity->setRightKey($entity->getRightKey() - $diff);
             }
         }
