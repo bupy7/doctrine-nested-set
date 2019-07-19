@@ -60,6 +60,12 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
             ->getResult();
     }
 
+    /**
+     * @param NestedSetInterface $entity
+     *
+     * @return NestedSetInterface|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function findOneParent(NestedSetInterface $entity): ?NestedSetInterface
     {
         if ($entity->getLevel() - 1 <= 0) {
@@ -115,6 +121,10 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
             ->getResult();
     }
 
+    /**
+     * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function getNextRootLeftKey(): int
     {
         /** @var NestedSetInterface $entity */
