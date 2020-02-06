@@ -2,7 +2,6 @@
 
 namespace Bupy7\Doctrine\NestedSet;
 
-use Doctrine\DBAL\TransactionIsolationLevel;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMException;
 
@@ -28,57 +27,33 @@ class NestedSetService
     }
 
     /**
+     * @TODO: Request the user transaction.
+     * 
      * @param NestedSetInterface $child
      * @param NestedSetInterface|null $parent
      * @throws ORMException
      */
     public function add(NestedSetInterface $child, NestedSetInterface $parent = null): void
     {
-        $oldIsoTrans = $this->em->getConnection()->getTransactionIsolation();
-        $this->em->getConnection()->setTransactionIsolation(TransactionIsolationLevel::SERIALIZABLE);
-        $this->em->beginTransaction();
-
-        try {
-            if ($parent === null) {
-                $this->addAsRoot($child);
-            } else {
-                $this->addAsChild($child, $parent);
-            }
-
-            $this->em->commit();
-        } catch (ORMException $e) {
-            $this->em->rollback();
-
-            throw $e;
-        } finally {
-            $this->em->getConnection()->setTransactionIsolation($oldIsoTrans);
+        if ($parent === null) {
+            $this->addAsRoot($child);
+        } else {
+            $this->addAsChild($child, $parent);
         }
     }
 
     /**
+     * @TODO: Request the user transaction.
+     * 
      * @param NestedSetInterface $child
      * @throws ORMException
      */
     public function remove(NestedSetInterface $child): void
     {
-        $oldIsoTrans = $this->em->getConnection()->getTransactionIsolation();
-        $this->em->getConnection()->setTransactionIsolation(TransactionIsolationLevel::SERIALIZABLE);
-        $this->em->beginTransaction();
-
-        try {
-            if ($child->getRightKey() - $child->getLeftKey() === 1) {
-                $this->removeOne($child);
-            } else {
-                $this->removeWithDescendants($child);
-            }
-
-            $this->em->commit();
-        } catch (ORMException $e) {
-            $this->em->rollback();
-
-            throw $e;
-        } finally {
-            $this->em->getConnection()->setTransactionIsolation($oldIsoTrans);
+        if ($child->getRightKey() - $child->getLeftKey() === 1) {
+            $this->removeOne($child);
+        } else {
+            $this->removeWithDescendants($child);
         }
     }
 
