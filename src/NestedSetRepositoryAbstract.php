@@ -6,9 +6,6 @@ use Doctrine\ORM\EntityRepository;
 
 abstract class NestedSetRepositoryAbstract extends EntityRepository
 {
-    private const ROOT_LEVEL = 1;
-    private const DEFAULT_ROOT_LEFT_KEY = 1;
-
     /**
      * @return NestedSetInterface[]|array
      */
@@ -95,7 +92,7 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
             ->where('ns.level = :level')
             ->orderBy('ns.leftKey')
             ->setParameters([
-                'level' => self::ROOT_LEVEL,
+                'level' => NestedSetConstant::ROOT_LEVEL,
             ])
             ->getQuery()
             ->getResult();
@@ -132,7 +129,7 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
             ->where('ns.level = :level')
             ->orderBy('ns.rightKey', 'DESC')
             ->setParameters([
-                'level' => self::ROOT_LEVEL,
+                'level' => NestedSetConstant::ROOT_LEVEL,
             ])
             ->setMaxResults(1)
             ->getQuery()
@@ -142,7 +139,7 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
             return $entity->getRightKey() + 1;
         }
 
-        return self::DEFAULT_ROOT_LEFT_KEY;
+        return NestedSetConstant::DEFAULT_ROOT_LEFT_KEY;
     }
 
     /**

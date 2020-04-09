@@ -14,7 +14,7 @@ class NestedSetServiceTest extends FunctionalTestCase
         $category = new Category();
         $category->setName('Example Test Name 1');
 
-        $this->getNestedSetService()->add($category);
+        $this->getNestedSetService()->append($category);
 
         /** @var Category $result */
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
@@ -33,7 +33,7 @@ class NestedSetServiceTest extends FunctionalTestCase
         /** @var Category $parentCategory */
         $parentCategory = $this->getNestedSetRepository()->find(42); // System terminals
 
-        $this->getNestedSetService()->add($category, $parentCategory);
+        $this->getNestedSetService()->append($category, $parentCategory);
 
         /** @var Category $result */
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
