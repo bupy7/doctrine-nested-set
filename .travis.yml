@@ -9,9 +9,7 @@ services:
   - mysql
 
 env:
-  - BDNS_DB_HOST=127.0.0.1 BDNS_DB_USERNAME=root BDNS_DB_PASSWORD=""
-  global:
-    - XDEBUG_MODE=coverage
+  - BDNS_DB_HOST=127.0.0.1 BDNS_DB_USERNAME=root BDNS_DB_PASSWORD="" XDEBUG_MODE=coverage
 
 before_install:
   - mysql -e "CREATE DATABASE master_test;"
