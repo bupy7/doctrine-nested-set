@@ -5,7 +5,7 @@ namespace Bupy7\Doctrine\NestedSet\Test\Fixture;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\FixtureInterface;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 
 abstract class FixtureAbstract extends AbstractFixture implements FixtureInterface, OrderedFixtureInterface
