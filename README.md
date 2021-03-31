@@ -384,7 +384,7 @@ Result of tree:
 use Doctrine\DBAL\TransactionIsolationLevel;
 
 // if you want to change isolation level
-// $oldTransaction = $entityManager->getConnection()->getTransactionIsolation();
+// $oldIsolationLevel = $entityManager->getConnection()->getTransactionIsolation();
 // $entityManager->getConnection()->setTransactionIsolation(TransactionIsolationLevel::SERIALIZABLE);
 
 $entityManager->beginTransaction();
@@ -398,7 +398,7 @@ try {
     throw $e;
 } finally {
     // if you changed isolation level
-    // $entityManager->getConnection()->setTransactionIsolation($oldTransaction);
+    // $entityManager->getConnection()->setTransactionIsolation($oldIsolationLevel);
 }
 ```
 
