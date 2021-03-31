@@ -378,6 +378,30 @@ Result of tree:
 - Tablets
 ```
 
+#### You may use transactions when it needs manually
+
+```php
+use Doctrine\DBAL\TransactionIsolationLevel;
+
+// if you want to change isolation level
+// $oldTransaction = $entityManager->getConnection()->getTransactionIsolation();
+// $entityManager->getConnection()->setTransactionIsolation(TransactionIsolationLevel::SERIALIZABLE);
+
+$entityManager->beginTransaction();
+try {
+    $category = $categoryRepository->findOneByName('PC');
+    $nestedSetService->remove($category);
+
+    $entityManager->commit();
+} catch (Exception $e) {
+    $entityManager->rollback();
+    throw $e;
+} finally {
+    // if you changed isolation level
+    // $entityManager->getConnection()->setTransactionIsolation($oldTransaction);
+}
+```
+
 License
 -------
 
