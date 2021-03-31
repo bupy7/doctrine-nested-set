@@ -146,7 +146,7 @@ class NestedSetService implements NestedSetServiceInterface
     private function addAsFirstChild(NestedSetInterface $child, NestedSetInterface $parent): void
     {
         $child->setLevel($parent->getLevel() + 1)
-            ->setLeftKey($parent->getLeftKey())
+            ->setLeftKey($parent->getLeftKey() + 1)
             ->setRightKey($child->getLeftKey() + 1);
 
         $leftKey = $parent->getLeftKey();
@@ -154,7 +154,7 @@ class NestedSetService implements NestedSetServiceInterface
         $entities = $this->repository->findGreatestByKeysValue($leftKey);
 
         foreach ($entities as $entity) {
-            if ($entity->getLeftKey() >= $leftKey) {
+            if ($entity->getLeftKey() > $leftKey) {
                 $entity->setLeftKey($entity->getLeftKey() + 2);
             }
 

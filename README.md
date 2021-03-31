@@ -20,10 +20,11 @@ Features
 - [x] Fething root items.
 - [x] Fething ancestor items.
 - [x] Adding as last of some item.
-- [ ] TODO: Adding as first of some item.
+- [x] Adding as first of some item.
 - [ ] TODO: Adding after some item.
 - [ ] TODO: Adding before some item.
-- [x] Adding as a root item.
+- [x] Adding as a first root item.
+- [x] Adding as a last root item.
 - [x] Removing a item.
 - [ ] TODO: Moving item after some item.
 - [ ] TODO: Moving item before some item.
@@ -250,6 +251,30 @@ $roots = $categoryRepository->findAncestors($childrenCategory);
 // - PC
 ```
 
+#### Adding as first of some item
+
+```php
+$category = new Category();
+$category->setName('DDR2');
+
+$parentCategory = $categoryRepository->findOneByName('RAM');
+$nestedSetService->prepend($category, $parentCategory);
+```
+
+Result of tree:
+
+```
+- PC
+- - Motherboards
+- - RAM
+- - - DDR2
+- - - DDR3
+- - - DDR4
+- - CPU
+- Laptops
+- Tablets
+```
+
 #### Adding as last of some item
 
 ```php
@@ -257,7 +282,7 @@ $category = new Category();
 $category->setName('LGA 1151v2');
 
 $parentCategory = $categoryRepository->findOneByName('CPU');
-$nestedSetService->add($category, $parentCategory);
+$nestedSetService->append($category, $parentCategory);
 ```
 
 Result of tree:
@@ -274,13 +299,36 @@ Result of tree:
 - Tablets
 ```
 
-#### Adding as a root item
+#### Adding as a first root item
 
 ```php
 $category = new Category();
 $category->setName('Phones');
 
-$nestedSetService->add($category);
+$nestedSetService->prepend($category);
+```
+
+Result of tree:
+
+```
+- Phones
+- PC
+- - Motherboards
+- - RAM
+- - - DDR3
+- - - DDR4
+- - CPU
+- Laptops
+- Tablets
+```
+
+#### Adding as a last root item
+
+```php
+$category = new Category();
+$category->setName('Phones');
+
+$nestedSetService->append($category);
 ```
 
 Result of tree:
@@ -329,11 +377,6 @@ Result of tree:
 - Laptops
 - Tablets
 ```
-
-Sponsors
---------
-
-[![JetBrains](docs/jetbrains-variant-4.svg)](https://www.jetbrains.com/?from=doctrine-nested-set)
 
 License
 -------
