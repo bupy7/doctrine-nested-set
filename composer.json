@@ -1,7 +1,7 @@
 {
   "name": "bupy7/doctrine-nested-set",
   "description": "Nested sets for Doctrine ORM",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "license": "BSD-3-Clause",
   "keywords": [
     "doctrine",
@@ -9,7 +9,8 @@
     "nested sets",
     "nested set",
     "php",
-    "database"
+    "database",
+    "db"
   ],
   "authors": [
     {
