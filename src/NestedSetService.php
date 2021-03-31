@@ -2,22 +2,21 @@
 
 namespace Bupy7\Doctrine\NestedSet;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\EntityManagerInterface;
 
-class NestedSetService
+class NestedSetService implements NestedSetServiceInterface
 {
     /**
-     * @var EntityManager
+     * @var EntityManagerInterface
      */
-    protected $em;
+    private $em;
     /**
      * @var NestedSetRepositoryAbstract
      */
-    protected $repository;
+    private $repository;
 
     public function __construct(
-        EntityManager $em,
+        EntityManagerInterface $em,
         NestedSetRepositoryAbstract $repository
     ) {
         $this->em = $em;
@@ -25,11 +24,9 @@ class NestedSetService
     }
 
     /**
-     * @TODO: Request the user transaction.
-     * 
      * @param NestedSetInterface $child
      * @param NestedSetInterface|null $parent
-     * @throws ORMException
+     * @throws \Doctrine\ORM\ORMException
      */
     public function append(NestedSetInterface $child, NestedSetInterface $parent = null): void
     {
@@ -41,11 +38,9 @@ class NestedSetService
     }
 
     /**
-     * @TODO: Request the user transaction.
-     *
      * @param NestedSetInterface $child
      * @param NestedSetInterface|null $parent
-     * @throws ORMException
+     * @throws \Doctrine\ORM\ORMException
      */
     public function prepend(NestedSetInterface $child, NestedSetInterface $parent = null): void
     {
@@ -57,10 +52,8 @@ class NestedSetService
     }
 
     /**
-     * @TODO: Request the user transaction.
-     * 
      * @param NestedSetInterface $child
-     * @throws ORMException
+     * @throws \Doctrine\ORM\ORMException
      */
     public function remove(NestedSetInterface $child): void
     {
@@ -73,7 +66,7 @@ class NestedSetService
 
     /**
      * @param NestedSetInterface $child
-     * @throws ORMException
+     * @throws \Doctrine\ORM\ORMException
      */
     private function addAsRoot(NestedSetInterface $child): void
     {
@@ -88,7 +81,7 @@ class NestedSetService
 
     /**
      * @param NestedSetInterface $child
-     * @throws ORMException
+     * @throws \Doctrine\ORM\ORMException
      */
     private function addAsFirstRoot(NestedSetInterface $child): void
     {
@@ -118,7 +111,7 @@ class NestedSetService
     /**
      * @param NestedSetInterface $child
      * @param NestedSetInterface $parent
-     * @throws ORMException
+     * @throws \Doctrine\ORM\ORMException
      */
     private function addAsChild(NestedSetInterface $child, NestedSetInterface $parent): void
     {
@@ -148,7 +141,7 @@ class NestedSetService
     /**
      * @param NestedSetInterface $child
      * @param NestedSetInterface $parent
-     * @throws ORMException
+     * @throws \Doctrine\ORM\ORMException
      */
     private function addAsFirstChild(NestedSetInterface $child, NestedSetInterface $parent): void
     {
@@ -177,7 +170,7 @@ class NestedSetService
 
     /**
      * @param NestedSetInterface $child
-     * @throws ORMException
+     * @throws \Doctrine\ORM\ORMException
      */
     private function removeOne(NestedSetInterface $child): void
     {
@@ -202,7 +195,7 @@ class NestedSetService
 
     /**
      * @param NestedSetInterface $child
-     * @throws ORMException
+     * @throws \Doctrine\ORM\ORMException
      */
     private function removeWithDescendants(NestedSetInterface $child): void
     {

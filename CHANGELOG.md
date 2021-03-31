@@ -1,6 +1,13 @@
 doctrine-nested-set
 ===================
 
+2.0.0 [2021-04-01]
+------------------
+
+- Del: Add method.
+- Del: Transactions from the service.
+- Add: Append and prepend methods.
+
 1.0.1 [2019-07-20]
 ------------------
 

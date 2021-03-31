@@ -23,6 +23,9 @@ class NestedSetServiceTest extends FunctionalTestCase
         $this->assertEquals(1, $result->getLevel());
         $this->assertEquals($this->getNestedSetRepository()->getNextRootLeftKey() - 2, $result->getLeftKey());
         $this->assertEquals($result->getLeftKey() + 1, $result->getRightKey());
+
+        // checking unique keys
+        $this->assertTrue($this->thereAreAllUniqueKeys());
     }
 
     public function testAddCategoryAsChild(): void
@@ -60,6 +63,107 @@ class NestedSetServiceTest extends FunctionalTestCase
         $this->assertEquals(1, $parentCategory->getLevel());
         $this->assertEquals(21, $parentCategory->getLeftKey());
         $this->assertEquals(36, $parentCategory->getRightKey());
+
+        // checking unique keys
+        $this->assertTrue($this->thereAreAllUniqueKeys());
+    }
+    
+    public function prependCategoryAsRoot(): void
+    {
+        $categories = $this->getNestedSetRepository()->findBy([], ['leftKey' => 'ASC']);
+        $expectedCategories = [];
+        /** @var Category $category */
+        foreach ($categories as $category) {
+            $expectedCategories[] = [
+                $category->getId(),
+                $category->getLevel(),
+                $category->getLeftKey() + 2,
+                $category->getRightKey() + 2
+            ];
+        }
+
+        $category = new Category();
+        $category->setName('Example Test Name 1');
+
+        $this->getNestedSetService()->prepend($category);
+
+        /** @var Category|null $result */
+        $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
+        $this->assertNotNull($result);
+        $this->assertEquals(1, $result->getLevel());
+        $this->assertEquals(1, $result->getLeftKey());
+        $this->assertEquals(2, $result->getRightKey());
+
+        $categories = $this->getNestedSetRepository()->findBy([], ['leftKey' => 'ASC']);
+        $actualCategories = [];
+        /** @var Category $category */
+        foreach ($categories as $category) {
+            if ($category->getId() === $result->getId()) {
+                continue;
+            }
+            $actualCategories[] = [
+                $category->getId(),
+                $category->getLevel(),
+                $category->getLeftKey(),
+                $category->getRightKey()
+            ];
+        }
+
+        $this->assertEquals($expectedCategories, $actualCategories);
+
+        // checking unique keys
+        $this->assertTrue($this->thereAreAllUniqueKeys());
+    }
+    
+    public function prependCategoryAsChild(): void
+    {
+        $category = new Category();
+        $category->setName('Example Test Name 1');
+
+        /** @var Category $parentCategory */
+        $parentCategory = $this->getNestedSetRepository()->find(39); // PBX and system phones
+
+        $this->getNestedSetService()->prepend($category, $parentCategory);
+
+        /** @var Category|null $result */
+        $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
+        $this->assertNotNull($result);
+        $this->assertEquals(3, $result->getLevel());
+        $this->assertEquals(27, $result->getLeftKey());
+        $this->assertEquals(28, $result->getRightKey());
+
+        $expectedCategories = [
+            [28, 1, 21, 36],
+            [38, 2, 22, 23],
+            [41, 2, 24, 25],
+            [39, 2, 26, 31],
+            [$result->getId(), 3, 27, 28],
+            [42, 3, 29, 30],
+            [40, 2, 32, 33],
+            [51, 2, 34, 35],
+        ];
+        /** @var Category $parentCategory */
+        $parentCategory = $this->getNestedSetRepository()->find(28); // Telephony
+        $categories = $this->getNestedSetRepository()->findDescendants($parentCategory);
+        $actualCategories = [
+            [
+                $parentCategory->getId(),
+                $parentCategory->getLevel(),
+                $parentCategory->getLeftKey(),
+                $parentCategory->getRightKey(),
+            ],
+        ];
+        /** @var Category $category */
+        foreach ($categories as $category) {
+            $actualCategories[] = [
+                $category->getId(),
+                $category->getLevel(),
+                $category->getLeftKey(),
+                $category->getRightKey()
+            ];
+        }
+
+        $this->assertEquals($expectedCategories, $actualCategories);
 
         // checking unique keys
         $this->assertTrue($this->thereAreAllUniqueKeys());

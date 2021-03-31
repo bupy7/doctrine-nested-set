@@ -59,9 +59,7 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
 
     /**
      * @param NestedSetInterface $entity
-     *
      * @return NestedSetInterface|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findOneParent(NestedSetInterface $entity): ?NestedSetInterface
     {
@@ -118,10 +116,6 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
             ->getResult();
     }
 
-    /**
-     * @return int
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
     public function getNextRootLeftKey(): int
     {
         /** @var NestedSetInterface $entity */
