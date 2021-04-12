@@ -5,6 +5,7 @@ doctrine-nested-set
 ------------------
 
 - Add: Multiple roots.
+- Enh: Refactoring.
 
 2.1.0 [2021-04-01]
 ------------------

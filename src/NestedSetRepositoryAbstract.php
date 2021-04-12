@@ -118,7 +118,200 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
             ->getResult();
     }
 
-    public function getMaxRoot(): int
+    /**
+     * @param NestedSetInterface $node
+     * @param NestedSetInterface|null $parent
+     * @throws \Doctrine\ORM\ORMException
+     */
+    public function append(NestedSetInterface $node, NestedSetInterface $parent = null): void
+    {
+        if ($parent === null) {
+            $this->addAsRoot($node);
+        } else {
+            $this->addAsChild($node, $parent);
+        }
+    }
+
+    /**
+     * @param NestedSetInterface $node
+     * @param NestedSetInterface|null $parent
+     * @throws \Doctrine\ORM\ORMException
+     */
+    public function prepend(NestedSetInterface $node, NestedSetInterface $parent = null): void
+    {
+        if ($parent === null) {
+            $this->addAsFirstRoot($node);
+        } else {
+            $this->addAsFirstChild($node, $parent);
+        }
+    }
+
+    /**
+     * @param NestedSetInterface $node
+     * @throws \Doctrine\ORM\ORMException
+     */
+    public function remove(NestedSetInterface $node): void
+    {
+        if ($node->getRightKey() - $node->getLeftKey() === 1) {
+            $this->removeOne($node);
+        } else {
+            $this->removeWithDescendants($node);
+        }
+    }
+
+    /**
+     * @param NestedSetInterface $node
+     * @throws \Doctrine\ORM\ORMException
+     */
+    private function addAsRoot(NestedSetInterface $node): void
+    {
+        $node->setRoot($this->getMaxRoot() + 1)
+            ->setLevel(NestedSetConstant::ROOT_LEVEL)
+            ->setLeftKey(NestedSetConstant::ROOT_LEFT_KEY)
+            ->setRightKey($node->getLeftKey() + 1);
+
+        $this->getEntityManager()->persist($node);
+
+        $this->getEntityManager()->flush();
+    }
+
+    /**
+     * @param NestedSetInterface $node
+     * @throws \Doctrine\ORM\ORMException
+     */
+    private function addAsFirstRoot(NestedSetInterface $node): void
+    {
+        $node->setRoot(NestedSetConstant::ROOT_KEY)
+            ->setLevel(NestedSetConstant::ROOT_LEVEL)
+            ->setLeftKey(NestedSetConstant::ROOT_LEFT_KEY)
+            ->setRightKey($node->getLeftKey() + 1);
+
+        $this->shiftRoots(NestedSetConstant::ROOT_KEY);
+
+        $this->getEntityManager()->persist($node);
+
+        $this->getEntityManager()->flush();
+    }
+
+    /**
+     * @param NestedSetInterface $child
+     * @param NestedSetInterface $parent
+     * @throws \Doctrine\ORM\ORMException
+     */
+    private function addAsChild(NestedSetInterface $child, NestedSetInterface $parent): void
+    {
+        $child->setRoot($parent->getRoot())
+            ->setLevel($parent->getLevel() + 1)
+            ->setLeftKey($parent->getRightKey())
+            ->setRightKey($child->getLeftKey() + 1);
+
+        $rightKey = $parent->getRightKey();
+
+        $entities = $this->findGreatest($parent->getRoot(), $rightKey);
+
+        foreach ($entities as $entity) {
+            if ($entity->getLeftKey() >= $rightKey) {
+                $entity->setLeftKey($entity->getLeftKey() + 2);
+            }
+
+            if ($entity->getRightKey() >= $rightKey) {
+                $entity->setRightKey($entity->getRightKey() + 2);
+            }
+        }
+
+        $this->getEntityManager()->persist($child);
+
+        $this->getEntityManager()->flush();
+    }
+
+    /**
+     * @param NestedSetInterface $child
+     * @param NestedSetInterface $parent
+     * @throws \Doctrine\ORM\ORMException
+     */
+    private function addAsFirstChild(NestedSetInterface $child, NestedSetInterface $parent): void
+    {
+        $child->setRoot($parent->getRoot())
+            ->setLevel($parent->getLevel() + 1)
+            ->setLeftKey($parent->getLeftKey() + 1)
+            ->setRightKey($child->getLeftKey() + 1);
+
+        $leftKey = $parent->getLeftKey();
+
+        $entities = $this->findGreatest($parent->getRoot(), $leftKey);
+
+        foreach ($entities as $entity) {
+            if ($entity->getLeftKey() > $leftKey) {
+                $entity->setLeftKey($entity->getLeftKey() + 2);
+            }
+
+            if ($entity->getRightKey() >= $leftKey) {
+                $entity->setRightKey($entity->getRightKey() + 2);
+            }
+        }
+
+        $this->getEntityManager()->persist($child);
+
+        $this->getEntityManager()->flush();
+    }
+
+    /**
+     * @param NestedSetInterface $node
+     * @throws \Doctrine\ORM\ORMException
+     */
+    private function removeOne(NestedSetInterface $node): void
+    {
+        $rightKey = $node->getRightKey();
+
+        $entities = $this->findGreatest($node->getRoot(), $rightKey);
+
+        foreach ($entities as $entity) {
+            if ($entity->getLeftKey() >= $rightKey) {
+                $entity->setLeftKey($entity->getLeftKey() - 2);
+            }
+
+            if ($entity->getRightKey() >= $rightKey) {
+                $entity->setRightKey($entity->getRightKey() - 2);
+            }
+        }
+
+        $this->getEntityManager()->remove($node);
+
+        $this->getEntityManager()->flush();
+    }
+
+    /**
+     * @param NestedSetInterface $node
+     * @throws \Doctrine\ORM\ORMException
+     */
+    private function removeWithDescendants(NestedSetInterface $node): void
+    {
+        $descendants = $this->findDescendants($node);
+        foreach ($descendants as $entity) {
+            $this->getEntityManager()->remove($entity);
+        }
+
+        $rightKey = $node->getRightKey();
+        $diff = $rightKey - $node->getLeftKey() + 1;
+
+        $entities = $this->findGreatest($node->getRoot(), $rightKey);
+
+        foreach ($entities as $entity) {
+            if ($entity->getLeftKey() >= $rightKey) {
+                $entity->setLeftKey($entity->getLeftKey() - $diff);
+            }
+
+            if ($entity->getRightKey() >= $rightKey) {
+                $entity->setRightKey($entity->getRightKey() - $diff);
+            }
+        }
+
+        $this->getEntityManager()->remove($node);
+
+        $this->getEntityManager()->flush();
+    }
+
+    private function getMaxRoot(): int
     {
         return (int)$this->createQueryBuilder('ns')
             ->select('MAX(ns.root)')
@@ -126,7 +319,7 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
             ->getSingleScalarResult();
     }
 
-    public function shiftRoots(int $minRoot): void
+    private function shiftRoots(int $minRoot): void
     {
         $qb = $this->getEntityManager()->createQueryBuilder();
         $qb->update($this->getClassName(), 'ns')
@@ -144,7 +337,7 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
      * @param int $minKey
      * @return NestedSetInterface[]
      */
-    public function findGreatest(int $root, int $minKey): array
+    private function findGreatest(int $root, int $minKey): array
     {
         $qb = $this->createQueryBuilder('ns');
         return $qb->where('ns.root = :root')

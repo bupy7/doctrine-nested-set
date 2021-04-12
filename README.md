@@ -165,14 +165,6 @@ class CategoryRepository extends NestedSetRepositoryAbstract
 }
 ```
 
-#### Create instance of the nested set service
-
-```php
-use Bupy7\Doctrine\NestedSet\NestedSetService;
-
-$nestedSetService = new NestedSetService($entityManager, $entityManager->getRepository(Category::class));
-```
-
 Usage
 -----
 
@@ -275,7 +267,7 @@ $category = new Category();
 $category->setName('DDR2');
 
 $parentCategory = $categoryRepository->findOneByName('RAM');
-$nestedSetService->prepend($category, $parentCategory);
+$categoryRepository->prepend($category, $parentCategory);
 ```
 
 Result of tree:
@@ -299,7 +291,7 @@ $category = new Category();
 $category->setName('LGA 1151v2');
 
 $parentCategory = $categoryRepository->findOneByName('CPU');
-$nestedSetService->append($category, $parentCategory);
+$categoryRepository->append($category, $parentCategory);
 ```
 
 Result of tree:
@@ -322,7 +314,7 @@ Result of tree:
 $category = new Category();
 $category->setName('Phones');
 
-$nestedSetService->prepend($category);
+$categoryRepository->prepend($category);
 ```
 
 Result of tree:
@@ -345,7 +337,7 @@ Result of tree:
 $category = new Category();
 $category->setName('Phones');
 
-$nestedSetService->append($category);
+$categoryRepository->append($category);
 ```
 
 Result of tree:
@@ -366,7 +358,7 @@ Result of tree:
 
 ```php
 $category = $categoryRepository->findOneByName('CPU');
-$nestedSetService->remove($category);
+$categoryRepository->remove($category);
 ```
 
 Result of tree:
@@ -385,7 +377,7 @@ or remove with descendants:
 
 ```php
 $category = $categoryRepository->findOneByName('PC');
-$nestedSetService->remove($category);
+$categoryRepository->remove($category);
 ```
 
 Result of tree:
@@ -407,7 +399,7 @@ use Doctrine\DBAL\TransactionIsolationLevel;
 $entityManager->beginTransaction();
 try {
     $category = $categoryRepository->findOneByName('PC');
-    $nestedSetService->remove($category);
+    $categoryRepository->remove($category);
 
     $entityManager->commit();
 } catch (Exception $e) {

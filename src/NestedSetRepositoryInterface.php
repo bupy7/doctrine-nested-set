@@ -38,14 +38,23 @@ interface NestedSetRepositoryInterface
      */
     public function findAncestors(NestedSetInterface $entity): array;
 
-    public function getMaxRoot(): int;
-
-    public function shiftRoots(int $minRoot): void;
+    /**
+     * @param NestedSetInterface $node
+     * @param NestedSetInterface|null $parent
+     * @throws \Doctrine\ORM\ORMException
+     */
+    public function append(NestedSetInterface $node, NestedSetInterface $parent = null): void;
 
     /**
-     * @param int $root
-     * @param int $minKey
-     * @return NestedSetInterface[]
+     * @param NestedSetInterface $node
+     * @param NestedSetInterface|null $parent
+     * @throws \Doctrine\ORM\ORMException
      */
-    public function findGreatest(int $root, int $minKey): array;
+    public function prepend(NestedSetInterface $node, NestedSetInterface $parent = null): void;
+
+    /**
+     * @param NestedSetInterface $node
+     * @throws \Doctrine\ORM\ORMException
+     */
+    public function remove(NestedSetInterface $node): void;
 }
