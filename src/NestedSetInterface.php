@@ -15,6 +15,10 @@ interface NestedSetInterface
      */
     public function getId();
 
+    public function getRoot(): int;
+
+    public function setRoot(int $root): NestedSetInterface;
+
     public function setLevel(int $level): NestedSetInterface;
 
     public function getLevel(): int;

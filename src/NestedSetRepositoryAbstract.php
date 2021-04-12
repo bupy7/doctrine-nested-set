@@ -4,34 +4,33 @@ namespace Bupy7\Doctrine\NestedSet;
 
 use Doctrine\ORM\EntityRepository;
 
-abstract class NestedSetRepositoryAbstract extends EntityRepository
+abstract class NestedSetRepositoryAbstract extends EntityRepository implements NestedSetRepositoryInterface
 {
     /**
-     * @return NestedSetInterface[]|array
+     * @return NestedSetInterface[]
      */
     public function findAll(): array
     {
         return $this->createQueryBuilder('ns')
-            ->orderBy('ns.leftKey')
+            ->orderBy('ns.root')
+            ->addOrderBy('ns.leftKey')
             ->getQuery()
             ->getResult();
     }
 
     /**
      * @param NestedSetInterface $entity
-     * @return array
+     * @return NestedSetInterface[]
      */
     public function findChildren(NestedSetInterface $entity): array
     {
         return $this->createQueryBuilder('ns')
-            ->where('ns.level = :level')
-            ->andWhere('ns.leftKey > :leftKey')
-            ->andWhere('ns.rightKey < :rightKey')
+            ->where('ns.root = :root')
+            ->andWhere('ns.level = :level')
             ->orderBy('ns.leftKey')
             ->setParameters([
                 'level' => $entity->getLevel() + 1,
-                'leftKey' => $entity->getLeftKey(),
-                'rightKey' => $entity->getRightKey(),
+                'root' => $entity->getRoot(),
             ])
             ->getQuery()
             ->getResult();
@@ -39,19 +38,17 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
 
     /**
      * @param NestedSetInterface $entity
-     * @return NestedSetInterface[]|array
+     * @return NestedSetInterface[]
      */
     public function findDescendants(NestedSetInterface $entity): array
     {
         return $this->createQueryBuilder('ns')
-            ->where('ns.level > :level')
-            ->andWhere('ns.leftKey > :leftKey')
-            ->andWhere('ns.rightKey < :rightKey')
+            ->where('ns.root = :root')
+            ->andWhere('ns.level > :level')
             ->orderBy('ns.leftKey')
             ->setParameters([
                 'level' => $entity->getLevel(),
-                'leftKey' => $entity->getLeftKey(),
-                'rightKey' => $entity->getRightKey(),
+                'root' => $entity->getRoot(),
             ])
             ->getQuery()
             ->getResult();
@@ -67,12 +64,14 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
             return null;
         }
         return $this->createQueryBuilder('ns')
-            ->where('ns.level = :level')
+            ->where('ns.root = :root')
+            ->andWhere('ns.level = :level')
             ->andWhere('ns.leftKey < :leftKey')
             ->andWhere('ns.rightKey > :rightKey')
             ->orderBy('ns.rightKey')
             ->setParameters([
                 'level' => $entity->getLevel() - 1,
+                'root' => $entity->getRoot(),
                 'leftKey' => $entity->getLeftKey(),
                 'rightKey' => $entity->getRightKey(),
             ])
@@ -82,13 +81,14 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
     }
 
     /**
-     * @return NestedSetInterface[]|array
+     * @return NestedSetInterface[]
      */
     public function findRoots(): array
     {
         return $this->createQueryBuilder('ns')
             ->where('ns.level = :level')
-            ->orderBy('ns.leftKey')
+            ->orderBy('ns.root')
+            ->addOrderBy('ns.leftKey')
             ->setParameters([
                 'level' => NestedSetConstant::ROOT_LEVEL,
             ])
@@ -98,16 +98,18 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
 
     /**
      * @param NestedSetInterface $entity
-     * @return NestedSetInterface[]|array
+     * @return NestedSetInterface[]
      */
     public function findAncestors(NestedSetInterface $entity): array
     {
         return $this->createQueryBuilder('ns')
-            ->where('ns.level < :level')
+            ->where('ns.root = :root')
+            ->andWhere('ns.level < :level')
             ->andWhere('ns.leftKey < :leftKey')
             ->andWhere('ns.rightKey > :rightKey')
             ->orderBy('ns.leftKey', 'DESC')
             ->setParameters([
+                'root' => $entity->getRoot(),
                 'level' => $entity->getLevel(),
                 'leftKey' => $entity->getLeftKey(),
                 'rightKey' => $entity->getRightKey(),
@@ -116,37 +118,43 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository
             ->getResult();
     }
 
-    public function getNextRootLeftKey(): int
+    public function getMaxRoot(): int
     {
-        /** @var NestedSetInterface $entity */
-        $entity = $this->createQueryBuilder('ns')
-            ->where('ns.level = :level')
-            ->orderBy('ns.rightKey', 'DESC')
-            ->setParameters([
-                'level' => NestedSetConstant::ROOT_LEVEL,
-            ])
-            ->setMaxResults(1)
+        return (int)$this->createQueryBuilder('ns')
+            ->select('MAX(ns.root)')
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getSingleScalarResult();
+    }
 
-        if ($entity !== null) {
-            return $entity->getRightKey() + 1;
-        }
-
-        return NestedSetConstant::DEFAULT_ROOT_LEFT_KEY;
+    public function shiftRoots(int $minRoot): void
+    {
+        $qb = $this->getEntityManager()->createQueryBuilder();
+        $qb->update($this->getClassName(), 'ns')
+            ->set('ns.root', 'ns.root + 1')
+            ->where('ns.root >= :minRoot')
+            ->setParameters([
+                'root' => $minRoot,
+            ])
+            ->getQuery()
+            ->execute();
     }
 
     /**
-     * @param int $minKeyValue
-     * @return NestedSetInterface[]|array
+     * @param int $root
+     * @param int $minKey
+     * @return NestedSetInterface[]
      */
-    public function findGreatestByKeysValue(int $minKeyValue): array
+    public function findGreatest(int $root, int $minKey): array
     {
-        return $this->createQueryBuilder('ns')
-            ->where('ns.leftKey >= :minKeyValue')
-            ->orWhere('ns.rightKey >= :minKeyValue')
+        $qb = $this->createQueryBuilder('ns');
+        return $qb->where('ns.root = :root')
+            ->andWhere($qb->expr()->orX(
+                'ns.leftKey >= :minKey',
+                'ns.rightKey >= :minKey'
+            ))
             ->setParameters([
-                'minKeyValue' => $minKeyValue,
+                'root' => $root,
+                'minKey' => $minKey,
             ])
             ->getQuery()
             ->getResult();

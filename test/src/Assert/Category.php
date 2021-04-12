@@ -13,6 +13,10 @@ class Category implements NestedSetInterface
     /**
      * @var int
      */
+    private $root = 1;
+    /**
+     * @var int
+     */
     private $level = 1;
     /**
      * @var int
@@ -42,6 +46,21 @@ class Category implements NestedSetInterface
     public function setId($id): NestedSetInterface
     {
         $this->id = $id;
+        return $this;
+    }
+
+    public function getRoot(): int
+    {
+        return $this->root;
+    }
+
+    /**
+     * @param int $root
+     * @return NestedSetInterface|Category
+     */
+    public function setRoot(int $root): NestedSetInterface
+    {
+        $this->root = $root;
         return $this;
     }
 

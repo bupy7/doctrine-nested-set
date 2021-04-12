@@ -13,6 +13,7 @@ Library for Doctrine ORM releasing [the nested set model tree](https://en.wikipe
 Features
 --------
 
+- [x] Multiple roots. 
 - [x] Fetching all items. 
 - [x] Fething children items.
 - [x] Fething descendant items.
@@ -64,6 +65,11 @@ class Category implements NestedSetInterface
      * @Column(type="integer")
      * @var int
      */
+    private $root = 1;
+    /**
+     * @Column(type="integer")
+     * @var int
+     */
     private $level = 1;
     /**
      * @Column(type="integer")
@@ -89,6 +95,17 @@ class Category implements NestedSetInterface
     public function setId($id): NestedSetInterface
     {
         $this->id = $id;
+        return $this;
+    }
+    
+    public function getRoot(): int
+    {
+        return $this->root;
+    }
+
+    public function setRoot(int $root): NestedSetInterface
+    {
+        $this->root = $root;
         return $this;
     }
 

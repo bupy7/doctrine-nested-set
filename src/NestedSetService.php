@@ -11,99 +11,89 @@ class NestedSetService implements NestedSetServiceInterface
      */
     private $em;
     /**
-     * @var NestedSetRepositoryAbstract
+     * @var NestedSetRepositoryInterface
      */
     private $repository;
 
     public function __construct(
         EntityManagerInterface $em,
-        NestedSetRepositoryAbstract $repository
+        NestedSetRepositoryInterface $repository
     ) {
         $this->em = $em;
         $this->repository = $repository;
     }
 
     /**
-     * @param NestedSetInterface $child
+     * @param NestedSetInterface $node
      * @param NestedSetInterface|null $parent
      * @throws \Doctrine\ORM\ORMException
      */
-    public function append(NestedSetInterface $child, NestedSetInterface $parent = null): void
+    public function append(NestedSetInterface $node, NestedSetInterface $parent = null): void
     {
         if ($parent === null) {
-            $this->addAsRoot($child);
+            $this->addAsRoot($node);
         } else {
-            $this->addAsChild($child, $parent);
+            $this->addAsChild($node, $parent);
         }
     }
 
     /**
-     * @param NestedSetInterface $child
+     * @param NestedSetInterface $node
      * @param NestedSetInterface|null $parent
      * @throws \Doctrine\ORM\ORMException
      */
-    public function prepend(NestedSetInterface $child, NestedSetInterface $parent = null): void
+    public function prepend(NestedSetInterface $node, NestedSetInterface $parent = null): void
     {
         if ($parent === null) {
-            $this->addAsFirstRoot($child);
+            $this->addAsFirstRoot($node);
         } else {
-            $this->addAsFirstChild($child, $parent);
+            $this->addAsFirstChild($node, $parent);
         }
     }
 
     /**
-     * @param NestedSetInterface $child
+     * @param NestedSetInterface $node
      * @throws \Doctrine\ORM\ORMException
      */
-    public function remove(NestedSetInterface $child): void
+    public function remove(NestedSetInterface $node): void
     {
-        if ($child->getRightKey() - $child->getLeftKey() === 1) {
-            $this->removeOne($child);
+        if ($node->getRightKey() - $node->getLeftKey() === 1) {
+            $this->removeOne($node);
         } else {
-            $this->removeWithDescendants($child);
+            $this->removeWithDescendants($node);
         }
     }
 
     /**
-     * @param NestedSetInterface $child
+     * @param NestedSetInterface $node
      * @throws \Doctrine\ORM\ORMException
      */
-    private function addAsRoot(NestedSetInterface $child): void
+    private function addAsRoot(NestedSetInterface $node): void
     {
-        $child->setLevel(NestedSetConstant::ROOT_LEVEL)
-            ->setLeftKey($this->repository->getNextRootLeftKey())
-            ->setRightKey($child->getLeftKey() + 1);
+        $node->setRoot($this->repository->getMaxRoot() + 1)
+            ->setLevel(NestedSetConstant::ROOT_LEVEL)
+            ->setLeftKey(NestedSetConstant::ROOT_LEFT_KEY)
+            ->setRightKey($node->getLeftKey() + 1);
 
-        $this->em->persist($child);
+        $this->em->persist($node);
 
         $this->em->flush();
     }
 
     /**
-     * @param NestedSetInterface $child
+     * @param NestedSetInterface $node
      * @throws \Doctrine\ORM\ORMException
      */
-    private function addAsFirstRoot(NestedSetInterface $child): void
+    private function addAsFirstRoot(NestedSetInterface $node): void
     {
-        $child->setLevel(NestedSetConstant::ROOT_LEVEL)
-            ->setLeftKey(NestedSetConstant::DEFAULT_ROOT_LEFT_KEY)
-            ->setRightKey($child->getLeftKey() + 1);
+        $node->setRoot(NestedSetConstant::ROOT_KEY)
+            ->setLevel(NestedSetConstant::ROOT_LEVEL)
+            ->setLeftKey(NestedSetConstant::ROOT_LEFT_KEY)
+            ->setRightKey($node->getLeftKey() + 1);
 
-        $leftKey = $child->getLeftKey();
+        $this->repository->shiftRoots(NestedSetConstant::ROOT_KEY);
 
-        $entities = $this->repository->findGreatestByKeysValue($leftKey);
-
-        foreach ($entities as $entity) {
-            if ($entity->getLeftKey() >= $leftKey) {
-                $entity->setLeftKey($entity->getLeftKey() + 2);
-            }
-
-            if ($entity->getRightKey() >= $leftKey) {
-                $entity->setRightKey($entity->getRightKey() + 2);
-            }
-        }
-
-        $this->em->persist($child);
+        $this->em->persist($node);
 
         $this->em->flush();
     }
@@ -115,13 +105,14 @@ class NestedSetService implements NestedSetServiceInterface
      */
     private function addAsChild(NestedSetInterface $child, NestedSetInterface $parent): void
     {
-        $child->setLevel($parent->getLevel() + 1)
+        $child->setRoot($parent->getRoot())
+            ->setLevel($parent->getLevel() + 1)
             ->setLeftKey($parent->getRightKey())
             ->setRightKey($child->getLeftKey() + 1);
 
         $rightKey = $parent->getRightKey();
 
-        $entities = $this->repository->findGreatestByKeysValue($rightKey);
+        $entities = $this->repository->findGreatest($parent->getRoot(), $rightKey);
 
         foreach ($entities as $entity) {
             if ($entity->getLeftKey() >= $rightKey) {
@@ -145,13 +136,14 @@ class NestedSetService implements NestedSetServiceInterface
      */
     private function addAsFirstChild(NestedSetInterface $child, NestedSetInterface $parent): void
     {
-        $child->setLevel($parent->getLevel() + 1)
+        $child->setRoot($parent->getRoot())
+            ->setLevel($parent->getLevel() + 1)
             ->setLeftKey($parent->getLeftKey() + 1)
             ->setRightKey($child->getLeftKey() + 1);
 
         $leftKey = $parent->getLeftKey();
 
-        $entities = $this->repository->findGreatestByKeysValue($leftKey);
+        $entities = $this->repository->findGreatest($parent->getRoot(), $leftKey);
 
         foreach ($entities as $entity) {
             if ($entity->getLeftKey() > $leftKey) {
@@ -169,14 +161,14 @@ class NestedSetService implements NestedSetServiceInterface
     }
 
     /**
-     * @param NestedSetInterface $child
+     * @param NestedSetInterface $node
      * @throws \Doctrine\ORM\ORMException
      */
-    private function removeOne(NestedSetInterface $child): void
+    private function removeOne(NestedSetInterface $node): void
     {
-        $rightKey = $child->getRightKey();
+        $rightKey = $node->getRightKey();
 
-        $entities = $this->repository->findGreatestByKeysValue($rightKey);
+        $entities = $this->repository->findGreatest($node->getRoot(), $rightKey);
 
         foreach ($entities as $entity) {
             if ($entity->getLeftKey() >= $rightKey) {
@@ -188,26 +180,26 @@ class NestedSetService implements NestedSetServiceInterface
             }
         }
 
-        $this->em->remove($child);
+        $this->em->remove($node);
 
         $this->em->flush();
     }
 
     /**
-     * @param NestedSetInterface $child
+     * @param NestedSetInterface $node
      * @throws \Doctrine\ORM\ORMException
      */
-    private function removeWithDescendants(NestedSetInterface $child): void
+    private function removeWithDescendants(NestedSetInterface $node): void
     {
-        $descendants = $this->repository->findDescendants($child);
+        $descendants = $this->repository->findDescendants($node);
         foreach ($descendants as $entity) {
             $this->em->remove($entity);
         }
 
-        $rightKey = $child->getRightKey();
-        $diff = $rightKey - $child->getLeftKey() + 1;
+        $rightKey = $node->getRightKey();
+        $diff = $rightKey - $node->getLeftKey() + 1;
 
-        $entities = $this->repository->findGreatestByKeysValue($rightKey);
+        $entities = $this->repository->findGreatest($node->getRoot(), $rightKey);
 
         foreach ($entities as $entity) {
             if ($entity->getLeftKey() >= $rightKey) {
@@ -219,7 +211,7 @@ class NestedSetService implements NestedSetServiceInterface
             }
         }
 
-        $this->em->remove($child);
+        $this->em->remove($node);
 
         $this->em->flush();
     }
