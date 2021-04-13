@@ -122,7 +122,6 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
      * @param NestedSetInterface $node
      * @param NestedSetInterface|null $parent
      * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\Persistence\Mapping\MappingException
      */
     public function append(NestedSetInterface $node, NestedSetInterface $parent = null): void
     {
@@ -139,7 +138,6 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
      * @param NestedSetInterface $node
      * @param NestedSetInterface|null $parent
      * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\Persistence\Mapping\MappingException
      */
     public function prepend(NestedSetInterface $node, NestedSetInterface $parent = null): void
     {
@@ -154,9 +152,7 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
 
     /**
      * @param NestedSetInterface $node
-     *
      * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\Persistence\Mapping\MappingException
      */
     public function remove(NestedSetInterface $node): void
     {
