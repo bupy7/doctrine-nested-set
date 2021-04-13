@@ -127,7 +127,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
 
         $this->assertNotNull($result);
-        $this->assertEquals(24, $result->getRoot());
+        $this->assertEquals(24, $result->getRootKey());
         $this->assertEquals(1, $result->getRightKey() - $result->getLeftKey());
         $this->assertEquals(1, $result->getLevel());
         $this->assertEquals(1, $result->getLeftKey());
@@ -160,7 +160,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         $parentCategory = $this->getNestedSetRepository()->find(42);
 
         $this->assertNotNull($result);
-        $this->assertEquals(2, $result->getRoot());
+        $this->assertEquals(2, $result->getRootKey());
         $this->assertEquals($parentCategory->getLevel() + 1, $result->getLevel());
         $this->assertEquals(4, $result->getLevel());
         $this->assertEquals(1, $result->getRightKey() - $result->getLeftKey());
@@ -168,21 +168,21 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         $this->assertEquals(9, $result->getRightKey());
 
         // first parent
-        $this->assertEquals(2, $parentCategory->getRoot());
+        $this->assertEquals(2, $parentCategory->getRootKey());
         $this->assertEquals(3, $parentCategory->getLevel());
         $this->assertEquals(7, $parentCategory->getLeftKey());
         $this->assertEquals(10, $parentCategory->getRightKey());
 
         // second parent
         $parentCategory = $this->getNestedSetRepository()->find(39); // PBX and system phones
-        $this->assertEquals(2, $parentCategory->getRoot());
+        $this->assertEquals(2, $parentCategory->getRootKey());
         $this->assertEquals(2, $parentCategory->getLevel());
         $this->assertEquals(6, $parentCategory->getLeftKey());
         $this->assertEquals(11, $parentCategory->getRightKey());
 
         // thirth parent
         $parentCategory = $this->getNestedSetRepository()->find(28); // Telephony
-        $this->assertEquals(2, $parentCategory->getRoot());
+        $this->assertEquals(2, $parentCategory->getRootKey());
         $this->assertEquals(1, $parentCategory->getLevel());
         $this->assertEquals(1, $parentCategory->getLeftKey());
         $this->assertEquals(16, $parentCategory->getRightKey());
@@ -203,7 +203,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         foreach ($categories as $category) {
             $expectedCategories[] = [
                 $category->getId(),
-                $category->getRoot() + 1,
+                $category->getRootKey() + 1,
                 $category->getLevel(),
                 $category->getLeftKey(),
                 $category->getRightKey()
@@ -221,7 +221,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
 
         $this->assertNotNull($result);
-        $this->assertEquals(1, $result->getRoot());
+        $this->assertEquals(1, $result->getRootKey());
         $this->assertEquals(1, $result->getLevel());
         $this->assertEquals(1, $result->getLeftKey());
         $this->assertEquals(2, $result->getRightKey());
@@ -235,7 +235,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
             }
             $actualCategories[] = [
                 $category->getId(),
-                $category->getRoot(),
+                $category->getRootKey(),
                 $category->getLevel(),
                 $category->getLeftKey(),
                 $category->getRightKey()
@@ -269,7 +269,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
 
         $this->assertNotNull($result);
-        $this->assertEquals(2, $result->getRoot());
+        $this->assertEquals(2, $result->getRootKey());
         $this->assertEquals(3, $result->getLevel());
         $this->assertEquals(7, $result->getLeftKey());
         $this->assertEquals(8, $result->getRightKey());
@@ -290,7 +290,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         $actualCategories = [
             [
                 $parentCategory->getId(),
-                $parentCategory->getRoot(),
+                $parentCategory->getRootKey(),
                 $parentCategory->getLevel(),
                 $parentCategory->getLeftKey(),
                 $parentCategory->getRightKey(),
@@ -300,7 +300,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         foreach ($categories as $category) {
             $actualCategories[] = [
                 $category->getId(),
-                $category->getRoot(),
+                $category->getRootKey(),
                 $category->getLevel(),
                 $category->getLeftKey(),
                 $category->getRightKey()
@@ -328,14 +328,14 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         // first parent
         $parentCategory = $this->getNestedSetRepository()->find(39); // PBX and system phones
-        $this->assertEquals(2, $parentCategory->getRoot());
+        $this->assertEquals(2, $parentCategory->getRootKey());
         $this->assertEquals(2, $parentCategory->getLevel());
         $this->assertEquals(6, $parentCategory->getLeftKey());
         $this->assertEquals(7, $parentCategory->getRightKey());
 
         // second parent
         $parentCategory = $this->getNestedSetRepository()->find(28); // Telephony
-        $this->assertEquals(2, $parentCategory->getRoot());
+        $this->assertEquals(2, $parentCategory->getRootKey());
         $this->assertEquals(1, $parentCategory->getLevel());
         $this->assertEquals(1, $parentCategory->getLeftKey());
         $this->assertEquals(12, $parentCategory->getRightKey());
@@ -364,7 +364,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         // first parent
         $childCategory = $this->getNestedSetRepository()->find(28); // Telephony
         $this->assertNotNull($childCategory);
-        $this->assertEquals(2, $childCategory->getRoot());
+        $this->assertEquals(2, $childCategory->getRootKey());
         $this->assertEquals(1, $childCategory->getLevel());
         $this->assertEquals(1, $childCategory->getLeftKey());
         $this->assertEquals(10, $childCategory->getRightKey());
@@ -421,14 +421,14 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         $keys = [];
         foreach ($categories as $category) {
-            $root = $category->getRoot();
+            $rootKey = $category->getRootKey();
 
-            if (!isset($keys[$root])) {
-                $keys[$root] = ['left' => [], 'right' => []];
+            if (!isset($keys[$rootKey])) {
+                $keys[$rootKey] = ['left' => [], 'right' => []];
             }
 
-            $keys[$root]['left'][] = $category->getLeftKey();
-            $keys[$root]['right'][] = $category->getRightKey();
+            $keys[$rootKey]['left'][] = $category->getLeftKey();
+            $keys[$rootKey]['right'][] = $category->getRightKey();
         }
 
         $isUnique = array_keys($keys) === array_unique(array_keys($keys));

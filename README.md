@@ -62,22 +62,22 @@ class Category implements NestedSetInterface
      */
     private $id;
     /**
-     * @Column(type="integer")
+     * @Column(type="integer", name="root_key")
      * @var int
      */
-    private $root = 1;
+    private $rootKey = 1;
     /**
      * @Column(type="integer")
      * @var int
      */
     private $level = 1;
     /**
-     * @Column(type="integer")
+     * @Column(type="integer", name="left_key")
      * @var int
      */
     private $leftKey;
     /**
-     * @Column(type="integer")
+     * @Column(type="integer", name="right_key")
      * @var int
      */
     private $rightKey;
@@ -98,14 +98,14 @@ class Category implements NestedSetInterface
         return $this;
     }
     
-    public function getRoot(): int
+    public function getRootKey(): int
     {
-        return $this->root;
+        return $this->rootKey;
     }
 
-    public function setRoot(int $root): NestedSetInterface
+    public function setRootKey(int $rootKey): NestedSetInterface
     {
-        $this->root = $root;
+        $this->rootKey = $rootKey;
         return $this;
     }
 

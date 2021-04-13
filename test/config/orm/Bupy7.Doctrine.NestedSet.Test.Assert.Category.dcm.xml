@@ -14,7 +14,7 @@
       <generator strategy="IDENTITY"/>
     </id>
 
-    <field name="root" type="integer"/>
+    <field name="rootKey" type="integer" column="root_key"/>
     <field name="level" type="integer"/>
     <field name="leftKey" type="integer" column="left_key"/>
     <field name="rightKey" type="integer" column="right_key"/>

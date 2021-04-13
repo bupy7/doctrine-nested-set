@@ -12,7 +12,7 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
     public function findAll(): array
     {
         return $this->createQueryBuilder('ns')
-            ->orderBy('ns.root')
+            ->orderBy('ns.rootKey')
             ->addOrderBy('ns.leftKey')
             ->getQuery()
             ->getResult();
@@ -25,12 +25,12 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
     public function findChildren(NestedSetInterface $entity): array
     {
         return $this->createQueryBuilder('ns')
-            ->where('ns.root = :root')
+            ->where('ns.rootKey = :rootKey')
             ->andWhere('ns.level = :level')
             ->orderBy('ns.leftKey')
             ->setParameters([
                 'level' => $entity->getLevel() + 1,
-                'root' => $entity->getRoot(),
+                'rootKey' => $entity->getRootKey(),
             ])
             ->getQuery()
             ->getResult();
@@ -43,12 +43,12 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
     public function findDescendants(NestedSetInterface $entity): array
     {
         return $this->createQueryBuilder('ns')
-            ->where('ns.root = :root')
+            ->where('ns.rootKey = :rootKey')
             ->andWhere('ns.level > :level')
             ->orderBy('ns.leftKey')
             ->setParameters([
                 'level' => $entity->getLevel(),
-                'root' => $entity->getRoot(),
+                'rootKey' => $entity->getRootKey(),
             ])
             ->getQuery()
             ->getResult();
@@ -64,14 +64,14 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
             return null;
         }
         return $this->createQueryBuilder('ns')
-            ->where('ns.root = :root')
+            ->where('ns.rootKey = :rootKey')
             ->andWhere('ns.level = :level')
             ->andWhere('ns.leftKey < :leftKey')
             ->andWhere('ns.rightKey > :rightKey')
             ->orderBy('ns.rightKey')
             ->setParameters([
                 'level' => $entity->getLevel() - 1,
-                'root' => $entity->getRoot(),
+                'rootKey' => $entity->getRootKey(),
                 'leftKey' => $entity->getLeftKey(),
                 'rightKey' => $entity->getRightKey(),
             ])
@@ -87,7 +87,7 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
     {
         return $this->createQueryBuilder('ns')
             ->where('ns.level = :level')
-            ->orderBy('ns.root')
+            ->orderBy('ns.rootKey')
             ->addOrderBy('ns.leftKey')
             ->setParameters([
                 'level' => NestedSetConstant::ROOT_LEVEL,
@@ -103,13 +103,13 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
     public function findAncestors(NestedSetInterface $entity): array
     {
         return $this->createQueryBuilder('ns')
-            ->where('ns.root = :root')
+            ->where('ns.rootKey = :rootKey')
             ->andWhere('ns.level < :level')
             ->andWhere('ns.leftKey < :leftKey')
             ->andWhere('ns.rightKey > :rightKey')
             ->orderBy('ns.leftKey', 'DESC')
             ->setParameters([
-                'root' => $entity->getRoot(),
+                'rootKey' => $entity->getRootKey(),
                 'level' => $entity->getLevel(),
                 'leftKey' => $entity->getLeftKey(),
                 'rightKey' => $entity->getRightKey(),
@@ -178,7 +178,7 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
      */
     private function addAsRoot(NestedSetInterface $node): void
     {
-        $node->setRoot($this->getMaxRoot() + 1)
+        $node->setRootKey($this->getMaxRootKey() + 1)
             ->setLevel(NestedSetConstant::ROOT_LEVEL)
             ->setLeftKey(NestedSetConstant::ROOT_LEFT_KEY)
             ->setRightKey($node->getLeftKey() + 1);
@@ -192,9 +192,9 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
      */
     private function addAsFirstRoot(NestedSetInterface $node): void
     {
-        $this->shiftRoots(NestedSetConstant::ROOT_KEY);
+        $this->shiftRootKeys(NestedSetConstant::ROOT_KEY);
 
-        $node->setRoot(NestedSetConstant::ROOT_KEY)
+        $node->setRootKey(NestedSetConstant::ROOT_KEY)
             ->setLevel(NestedSetConstant::ROOT_LEVEL)
             ->setLeftKey(NestedSetConstant::ROOT_LEFT_KEY)
             ->setRightKey($node->getLeftKey() + 1);
@@ -209,10 +209,10 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
      */
     private function addAsChild(NestedSetInterface $child, NestedSetInterface $parent): void
     {
-        $this->shiftGreatestLeftKeys($parent->getRoot(), $parent->getRightKey(), 2);
-        $this->shiftGreatestRightKeys($parent->getRoot(), $parent->getRightKey(), 2);
+        $this->shiftGreatestLeftKeys($parent->getRootKey(), $parent->getRightKey(), 2);
+        $this->shiftGreatestRightKeys($parent->getRootKey(), $parent->getRightKey(), 2);
 
-        $child->setRoot($parent->getRoot())
+        $child->setRootKey($parent->getRootKey())
             ->setLevel($parent->getLevel() + 1)
             ->setLeftKey($parent->getRightKey())
             ->setRightKey($child->getLeftKey() + 1);
@@ -227,10 +227,10 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
      */
     private function addAsFirstChild(NestedSetInterface $child, NestedSetInterface $parent): void
     {
-        $this->shiftGreatestLeftKeys($parent->getRoot(), $parent->getLeftKey() + 1, 2);
-        $this->shiftGreatestRightKeys($parent->getRoot(), $parent->getLeftKey(), 2);
+        $this->shiftGreatestLeftKeys($parent->getRootKey(), $parent->getLeftKey() + 1, 2);
+        $this->shiftGreatestRightKeys($parent->getRootKey(), $parent->getLeftKey(), 2);
 
-        $child->setRoot($parent->getRoot())
+        $child->setRootKey($parent->getRootKey())
             ->setLevel($parent->getLevel() + 1)
             ->setLeftKey($parent->getLeftKey() + 1)
             ->setRightKey($child->getLeftKey() + 1);
@@ -244,8 +244,8 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
      */
     private function removeOne(NestedSetInterface $node): void
     {
-        $this->shiftGreatestLeftKeys($node->getRoot(), $node->getRightKey(), -2);
-        $this->shiftGreatestRightKeys($node->getRoot(), $node->getRightKey(), -2);
+        $this->shiftGreatestLeftKeys($node->getRootKey(), $node->getRightKey(), -2);
+        $this->shiftGreatestRightKeys($node->getRootKey(), $node->getRightKey(), -2);
 
         $this->getEntityManager()->remove($node);
     }
@@ -256,50 +256,50 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
      */
     private function removeWithDescendants(NestedSetInterface $node): void
     {
-        $this->removeDescendants($node->getRoot(), $node->getLevel());
+        $this->removeDescendants($node->getRootKey(), $node->getLevel());
 
         $diff = ($node->getRightKey() - $node->getLeftKey() + 1) * -1;
-        $this->shiftGreatestLeftKeys($node->getRoot(), $node->getRightKey(), $diff);
-        $this->shiftGreatestRightKeys($node->getRoot(), $node->getRightKey(), $diff);
+        $this->shiftGreatestLeftKeys($node->getRootKey(), $node->getRightKey(), $diff);
+        $this->shiftGreatestRightKeys($node->getRootKey(), $node->getRightKey(), $diff);
 
         $this->getEntityManager()->remove($node);
     }
 
-    private function getMaxRoot(): int
+    private function getMaxRootKey(): int
     {
         return (int)$this->createQueryBuilder('ns')
-            ->select('MAX(ns.root)')
+            ->select('MAX(ns.rootKey)')
             ->getQuery()
             ->getSingleScalarResult();
     }
 
-    private function shiftRoots(int $minRoot): void
+    private function shiftRootKeys(int $minRootKey): void
     {
         $this->getEntityManager()->createQueryBuilder()
             ->update($this->getClassName(), 'ns')
-            ->set('ns.root', 'ns.root + 1')
-            ->where('ns.root >= :minRoot')
+            ->set('ns.rootKey', 'ns.rootKey + 1')
+            ->where('ns.rootKey >= :minRootKey')
             ->setParameters([
-                'minRoot' => $minRoot,
+                'minRootKey' => $minRootKey,
             ])
             ->getQuery()
             ->execute();
     }
 
     /**
-     * @param int $root
+     * @param int $rootKey
      * @param int $minKey
      * @param int $shiftValue
      */
-    private function shiftGreatestLeftKeys(int $root, int $minKey, int $shiftValue): void
+    private function shiftGreatestLeftKeys(int $rootKey, int $minKey, int $shiftValue): void
     {
         $this->getEntityManager()->createQueryBuilder()
             ->update($this->getClassName(), 'ns')
             ->set('ns.leftKey', 'ns.leftKey + :shiftValue')
-            ->where('ns.root = :root')
+            ->where('ns.rootKey = :rootKey')
             ->andWhere('ns.leftKey >= :minKey')
             ->setParameters([
-                'root' => $root,
+                'rootKey' => $rootKey,
                 'minKey' => $minKey,
                 'shiftValue' => $shiftValue,
             ])
@@ -307,15 +307,15 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
             ->execute();
     }
 
-    private function shiftGreatestRightKeys(int $root, int $minKey, int $shiftValue): void
+    private function shiftGreatestRightKeys(int $rootKey, int $minKey, int $shiftValue): void
     {
         $this->getEntityManager()->createQueryBuilder()
             ->update($this->getClassName(), 'ns')
             ->set('ns.rightKey', 'ns.rightKey + :shiftValue')
-            ->where('ns.root = :root')
+            ->where('ns.rootKey = :rootKey')
             ->andWhere('ns.rightKey >= :minKey')
             ->setParameters([
-                'root' => $root,
+                'rootKey' => $rootKey,
                 'minKey' => $minKey,
                 'shiftValue' => $shiftValue,
             ])
@@ -323,14 +323,14 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
             ->execute();
     }
 
-    private function removeDescendants(int $root, int $level): void
+    private function removeDescendants(int $rootKey, int $level): void
     {
         $this->getEntityManager()->createQueryBuilder()
             ->delete($this->getClassName(), 'ns')
-            ->where('ns.root = :root')
+            ->where('ns.rootKey = :rootKey')
             ->andWhere('ns.level > :level')
             ->setParameters([
-                'root' => $root,
+                'rootKey' => $rootKey,
                 'level' => $level,
             ])
             ->getQuery()
