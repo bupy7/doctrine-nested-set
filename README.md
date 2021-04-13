@@ -406,8 +406,8 @@ $entityManager->beginTransaction();
 try {
     $category = $categoryRepository->findOneByName('PC');
     $categoryRepository->remove($category);
-
     $entityManager->commit();
+    $entityManager->clear(); // optional, if you need
 } catch (Exception $e) {
     $entityManager->rollback();
     throw $e;
