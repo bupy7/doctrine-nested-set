@@ -123,6 +123,8 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         $this->assertNotNull($category->getId());
 
+        $this->entityManager->clear();
+
         /** @var Category $result */
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
 
@@ -153,6 +155,8 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         $this->assertNotNull($category->getId());
         $this->assertNotNull($parentCategory->getId());
+
+        $this->entityManager->clear();
 
         /** @var Category $result */
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
@@ -217,6 +221,8 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         $this->assertNotNull($category->getId());
 
+        $this->entityManager->clear();
+
         /** @var Category|null $result */
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
 
@@ -264,6 +270,8 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         $this->assertNotNull($category->getId());
         $this->assertNotNull($parentCategory->getId());
+
+        $this->entityManager->clear();
 
         /** @var Category|null $result */
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
@@ -326,6 +334,8 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         $this->assertNull($category->getId());
 
+        $this->entityManager->clear();
+
         // first parent
         $parentCategory = $this->getNestedSetRepository()->find(39); // PBX and system phones
         $this->assertEquals(2, $parentCategory->getRootKey());
@@ -356,6 +366,8 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         $this->getNestedSetRepository()->remove($category);
 
         $this->assertNull($category->getId());
+
+        $this->entityManager->clear();
 
         // first child
         $childCategory = $this->getNestedSetRepository()->find(42); // System terminals

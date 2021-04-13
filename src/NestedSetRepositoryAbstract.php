@@ -133,7 +133,6 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
         }
 
         $this->getEntityManager()->flush();
-        $this->getEntityManager()->clear();
     }
 
     /**
@@ -151,7 +150,6 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
         }
 
         $this->getEntityManager()->flush();
-        $this->getEntityManager()->clear();
     }
 
     /**
@@ -169,7 +167,6 @@ abstract class NestedSetRepositoryAbstract extends EntityRepository implements N
         }
 
         $this->getEntityManager()->flush();
-        $this->getEntityManager()->clear();
     }
 
     /**

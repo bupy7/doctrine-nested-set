@@ -268,6 +268,7 @@ $category->setName('DDR2');
 
 $parentCategory = $categoryRepository->findOneByName('RAM');
 $categoryRepository->prepend($category, $parentCategory);
+$entityManager->clear(); // optional, if you need
 ```
 
 Result of tree:
@@ -292,6 +293,7 @@ $category->setName('LGA 1151v2');
 
 $parentCategory = $categoryRepository->findOneByName('CPU');
 $categoryRepository->append($category, $parentCategory);
+$entityManager->clear(); // optional, if you need
 ```
 
 Result of tree:
@@ -315,6 +317,7 @@ $category = new Category();
 $category->setName('Phones');
 
 $categoryRepository->prepend($category);
+$entityManager->clear(); // optional, if you need
 ```
 
 Result of tree:
@@ -338,6 +341,7 @@ $category = new Category();
 $category->setName('Phones');
 
 $categoryRepository->append($category);
+$entityManager->clear(); // optional, if you need
 ```
 
 Result of tree:
@@ -359,6 +363,7 @@ Result of tree:
 ```php
 $category = $categoryRepository->findOneByName('CPU');
 $categoryRepository->remove($category);
+$entityManager->clear(); // optional, if you need
 ```
 
 Result of tree:
@@ -378,6 +383,7 @@ or remove with descendants:
 ```php
 $category = $categoryRepository->findOneByName('PC');
 $categoryRepository->remove($category);
+$entityManager->clear(); // optional, if you need
 ```
 
 Result of tree:
