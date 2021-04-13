@@ -5,6 +5,9 @@ namespace Bupy7\Doctrine\NestedSet\Test\Functional;
 use Bupy7\Doctrine\NestedSet\NestedSetRepositoryAbstract;
 use Bupy7\Doctrine\NestedSet\Test\Assert\Category;
 use Bupy7\Doctrine\NestedSet\Test\FunctionalTestCase;
+use Doctrine\DBAL\TransactionIsolationLevel;
+use Doctrine\ORM\ORMException;
+use Doctrine\Persistence\Mapping\MappingException;
 use function array_keys;
 use function array_map;
 use function array_unique;
@@ -109,6 +112,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
     /**
      * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\Persistence\Mapping\MappingException
      */
     public function testAddCategoryAsRoot(): void
     {
@@ -117,8 +121,11 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         $this->getNestedSetRepository()->append($category);
 
+        $this->assertNotNull($category->getId());
+
         /** @var Category $result */
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
+
         $this->assertNotNull($result);
         $this->assertEquals(24, $result->getRoot());
         $this->assertEquals(1, $result->getRightKey() - $result->getLeftKey());
@@ -132,6 +139,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
     /**
      * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\Persistence\Mapping\MappingException
      */
     public function testAddCategoryAsChild(): void
     {
@@ -143,8 +151,14 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         $this->getNestedSetRepository()->append($category, $parentCategory);
 
+        $this->assertNotNull($category->getId());
+        $this->assertNotNull($parentCategory->getId());
+
         /** @var Category $result */
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
+        /** @var Category $parentCategory */
+        $parentCategory = $this->getNestedSetRepository()->find(42);
+
         $this->assertNotNull($result);
         $this->assertEquals(2, $result->getRoot());
         $this->assertEquals($parentCategory->getLevel() + 1, $result->getLevel());
@@ -179,10 +193,11 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
     /**
      * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\Persistence\Mapping\MappingException
      */
-    public function prependCategoryAsRoot(): void
+    public function testPrependCategoryAsRoot(): void
     {
-        $categories = $this->getNestedSetRepository()->findBy([], ['leftKey' => 'ASC']);
+        $categories = $this->getNestedSetRepository()->findAll();
         $expectedCategories = [];
         /** @var Category $category */
         foreach ($categories as $category) {
@@ -190,8 +205,8 @@ class NestedSetRepositoryTest extends FunctionalTestCase
                 $category->getId(),
                 $category->getRoot() + 1,
                 $category->getLevel(),
-                $category->getLeftKey() + 2,
-                $category->getRightKey() + 2
+                $category->getLeftKey(),
+                $category->getRightKey()
             ];
         }
 
@@ -200,15 +215,18 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         $this->getNestedSetRepository()->prepend($category);
 
+        $this->assertNotNull($category->getId());
+
         /** @var Category|null $result */
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
+
         $this->assertNotNull($result);
         $this->assertEquals(1, $result->getRoot());
         $this->assertEquals(1, $result->getLevel());
         $this->assertEquals(1, $result->getLeftKey());
         $this->assertEquals(2, $result->getRightKey());
 
-        $categories = $this->getNestedSetRepository()->findBy([], ['leftKey' => 'ASC']);
+        $categories = $this->getNestedSetRepository()->findAll();
         $actualCategories = [];
         /** @var Category $category */
         foreach ($categories as $category) {
@@ -217,6 +235,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
             }
             $actualCategories[] = [
                 $category->getId(),
+                $category->getRoot(),
                 $category->getLevel(),
                 $category->getLeftKey(),
                 $category->getRightKey()
@@ -231,8 +250,9 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
     /**
      * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\Persistence\Mapping\MappingException
      */
-    public function prependCategoryAsChild(): void
+    public function testPrependCategoryAsChild(): void
     {
         $category = new Category();
         $category->setName('Example Test Name 1');
@@ -242,22 +262,27 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         $this->getNestedSetRepository()->prepend($category, $parentCategory);
 
+        $this->assertNotNull($category->getId());
+        $this->assertNotNull($parentCategory->getId());
+
         /** @var Category|null $result */
         $result = $this->getNestedSetRepository()->findOneByName('Example Test Name 1');
+
         $this->assertNotNull($result);
+        $this->assertEquals(2, $result->getRoot());
         $this->assertEquals(3, $result->getLevel());
-        $this->assertEquals(27, $result->getLeftKey());
-        $this->assertEquals(28, $result->getRightKey());
+        $this->assertEquals(7, $result->getLeftKey());
+        $this->assertEquals(8, $result->getRightKey());
 
         $expectedCategories = [
-            [28, 1, 21, 36],
-            [38, 2, 22, 23],
-            [41, 2, 24, 25],
-            [39, 2, 26, 31],
-            [$result->getId(), 3, 27, 28],
-            [42, 3, 29, 30],
-            [40, 2, 32, 33],
-            [51, 2, 34, 35],
+            [28, 2, 1, 1, 16],
+            [38, 2, 2, 2, 3],
+            [41, 2, 2, 4, 5],
+            [39, 2, 2, 6, 11],
+            [$result->getId(), 2, 3, 7, 8],
+            [42, 2, 3, 9, 10],
+            [40, 2, 2, 12, 13],
+            [51, 2, 2, 14, 15],
         ];
         /** @var Category $parentCategory */
         $parentCategory = $this->getNestedSetRepository()->find(28); // Telephony
@@ -265,6 +290,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         $actualCategories = [
             [
                 $parentCategory->getId(),
+                $parentCategory->getRoot(),
                 $parentCategory->getLevel(),
                 $parentCategory->getLeftKey(),
                 $parentCategory->getRightKey(),
@@ -274,6 +300,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         foreach ($categories as $category) {
             $actualCategories[] = [
                 $category->getId(),
+                $category->getRoot(),
                 $category->getLevel(),
                 $category->getLeftKey(),
                 $category->getRightKey()
@@ -288,6 +315,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
     /**
      * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\Persistence\Mapping\MappingException
      */
     public function testRemoveChildWithoutChildren(): void
     {
@@ -295,6 +323,8 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         $category = $this->getNestedSetRepository()->find(42); // System terminals
 
         $this->getNestedSetRepository()->remove($category);
+
+        $this->assertNull($category->getId());
 
         // first parent
         $parentCategory = $this->getNestedSetRepository()->find(39); // PBX and system phones
@@ -316,6 +346,7 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
     /**
      * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\Persistence\Mapping\MappingException
      */
     public function testRemoveChildWithDescendants(): void
     {
@@ -323,6 +354,8 @@ class NestedSetRepositoryTest extends FunctionalTestCase
         $category = $this->getNestedSetRepository()->find(39); // PBX and system phones
 
         $this->getNestedSetRepository()->remove($category);
+
+        $this->assertNull($category->getId());
 
         // first child
         $childCategory = $this->getNestedSetRepository()->find(42); // System terminals
@@ -338,6 +371,48 @@ class NestedSetRepositoryTest extends FunctionalTestCase
 
         // checking unique keys
         $this->assertTrue($this->thereAreAllUniqueKeys());
+    }
+
+    /**
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\Persistence\Mapping\MappingException
+     */
+    public function testRemoveChildWithDescendantsAndTransaction(): void
+    {
+        $oldLevel = $this->entityManager->getConnection()->getTransactionIsolation();
+        $this->entityManager->getConnection()->setTransactionIsolation(TransactionIsolationLevel::SERIALIZABLE);
+        $this->entityManager->beginTransaction();
+        try {
+            $this->testRemoveChildWithDescendants();
+
+            $this->entityManager->commit();
+        } catch (ORMException | MappingException $e) {
+            $this->entityManager->rollback();
+            throw $e;
+        } finally {
+            $this->entityManager->getConnection()->setTransactionIsolation($oldLevel);
+        }
+    }
+
+    /**
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\Persistence\Mapping\MappingException
+     */
+    public function testPrependCategoryAsChildAndTransaction(): void
+    {
+        $oldLevel = $this->entityManager->getConnection()->getTransactionIsolation();
+        $this->entityManager->getConnection()->setTransactionIsolation(TransactionIsolationLevel::SERIALIZABLE);
+        $this->entityManager->beginTransaction();
+        try {
+            $this->testPrependCategoryAsChild();
+
+            $this->entityManager->commit();
+        } catch (ORMException | MappingException $e) {
+            $this->entityManager->rollback();
+            throw $e;
+        } finally {
+            $this->entityManager->getConnection()->setTransactionIsolation($oldLevel);
+        }
     }
 
     private function thereAreAllUniqueKeys(): bool
